@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心情 & 蛐蛐日记</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #d1d1d1;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            font-weight: 200;
+            letter-spacing: 4px;
+            color: #444;
+            transition: 0.5s;
+            cursor: pointer;
+        }
+        h1:hover {
+            color: #eee;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+        #diary-content {
+            margin-top: 30px;
+            opacity: 0;
+            transition: opacity 1s ease;
+            max-width: 300px;
+            line-height: 1.6;
+            font-size: 0.9rem;
+        }
+        .secret-hint {
+            position: fixed;
+            bottom: 20px;
+            font-size: 10px;
+            color: #222;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 onclick="revealContent()">心情 & 蛐蛐</h1>
+        <div id="diary-content">
+            “某人写代码写到断电，<br>
+            这会儿估计还在梦里调 Bug 呢。<br>
+            在这儿蛐蛐他，他应该看不见吧？”
+        </div>
+    </div>
+
+    <div class="secret-hint">点击标题，查看今日份蛐蛐</div>
+
+    <script>
+        function revealContent() {
+            const content = document.getElementById('diary-content');
+            content.style.opacity = content.style.opacity === '1' ? '0' : '1';
+        }
+    </script>
+</body>
+</html>
