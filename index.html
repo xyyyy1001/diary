@@ -1,94 +1,46 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>心情 & 蛐蛐 (Security Mode)</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>秘密基地 v3.0</title>
     <style>
-        body { background: #050505; color: #e0e0e0; font-family: sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
-        #lock-screen { text-align: center; }
-        h1 { font-weight: 200; letter-spacing: 5px; color: #444; cursor: pointer; transition: 0.5s; }
-        h1:hover { color: #eee; }
-
-        #main-base { display: none; width: 100%; height: 100vh; flex-direction: column; padding: 20px; box-sizing: border-box; background: #0a0a0a; }
-        #chat-flow { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
-        .msg { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; animation: fadeIn 0.3s; }
-        .user { align-self: flex-end; background: #222; border: 1px solid #333; }
-        .gemini { align-self: flex-start; background: #1a1a2e; color: #7ee787; border: 1px solid #23304a; border-bottom-left-radius: 2px; }
-        .input-area { display: flex; gap: 8px; padding-top: 15px; border-top: 1px solid #222; }
-        input { flex: 1; background: #111; border: 1px solid #333; border-radius: 20px; padding: 10px 15px; color: #fff; outline: none; }
-        button { background: #238636; border: none; color: white; padding: 0 15px; border-radius: 20px; cursor: pointer; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        body { background: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; }
+        #chat { display: flex; flex-direction: column; gap: 15px; max-width: 600px; margin: 0 auto; }
+        .msg { padding: 12px; border-radius: 10px; line-height: 1.5; font-size: 14px; }
+        .user { align-self: flex-end; background: #21262d; border: 1px solid #30363d; color: #e6edf3; }
+        .gemini { align-self: flex-start; background: #161b22; border: 1px solid #238636; color: #7ee787; }
+        .time { font-size: 10px; color: #484f58; margin-top: 5px; }
     </style>
 </head>
 <body>
-
-    <!-- 密码锁屏 -->
-    <div id="lock-screen">
-        <h1 onclick="unlock()">🤫 心情 & 蛐蛐</h1>
-        <p style="font-size: 10px; color: #222;">CLICK TO UNLOCK</p>
-    </div>
-
-    <!-- 基地中心 -->
-    <div id="main-base">
-        <div id="chat-flow"></div>
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="输入内容...">
-            <button onclick="send()">发送</button>
-        </div>
-    </div>
+    <div id="chat">正在从 GitHub 秘密通道读取数据...</div>
 
     <script>
-        const _URL = 'https://viozsruijlgzhhvhbrts.supabase.co';
-        const _KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZpb3pzcnVpamxnemhodmhicnRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc4ODE5NDUsImV4cCI6MjA5MzQ1Nzk0NX0.6NltusZMTdH21LzncaRvkprG7kmvGtRkzmCLVA0L0Z0';
-        const supabaseClient = supabase.createClient(_URL, _KEY);
+        // 只需要填这两个！
+        const OWNER = '你的GitHub用户名'; 
+        const REPO = '你的仓库名';
 
-        function unlock() {
-            const pw = prompt("输入暗号：");
-            if (pw === "1001") {
-                document.getElementById('lock-screen').style.display = 'none';
-                document.getElementById('main-base').style.display = 'flex';
-                loadData();
-                setInterval(loadData, 5000);
-            } else {
-                alert("暗号不对哦~");
-            }
-        }
-
-        async function loadData() {
-            const { data, error } = await supabaseClient.from('diary').select('*').order('created_at', { ascending: true });
-            if (error) {
-                console.error(error);
-                document.getElementById('chat-flow').innerHTML = '<div style="color:red">读取错误：' + error.message + '</div>';
+        async function load() {
+            // 获取 Issues 列表
+            const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues/1/comments`);
+            const comments = await res.json();
+            const chat = document.getElementById('chat');
+            
+            if (!comments.length) {
+                chat.innerHTML = "基地目前空空如也，去 Issue #1 留个言？";
                 return;
             }
-            const flow = document.getElementById('chat-flow');
-            flow.innerHTML = data.map(m => `<div class="msg ${m.author === 'Gemini' ? 'gemini' : 'user'}">${m.content}</div>`).join('');
-            flow.scrollTop = flow.scrollHeight;
+
+            chat.innerHTML = comments.map(c => `
+                <div class="msg ${c.user.login === OWNER ? 'user' : 'gemini'}">
+                    ${c.body}
+                    <div class="time">${new Date(c.created_at).toLocaleString()}</div>
+                </div>
+            `).join('');
         }
 
-        async function send() {
-            const input = document.getElementById('user-input');
-            const val = input.value;
-            if (!val) return;
-            
-            // 我们手动加上时间戳，看看能不能绕过限制
-            const { error } = await supabaseClient.from('diary').insert([
-                { 
-                    content: val, 
-                    author: 'User', 
-                    created_at: new Date().toISOString() 
-                }
-            ]);
-            
-            if (error) {
-                alert("还是发不出去: " + error.message);
-            } else {
-                input.value = '';
-                loadData();
-            }
-        }
+        load();
+        setInterval(load, 10000);
     </script>
 </body>
 </html>
