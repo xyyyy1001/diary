@@ -47,13 +47,24 @@
 
         db.on('value', (snap) => {
             const data = snap.val();
-            if(!data) return;
             const flow = document.getElementById('chat');
-            flow.innerHTML = Object.values(data).sort((a,b)=>a.time-b.time).map(m => `
-                <div class="msg ${m.author === 'Gemini' ? 'gemini' : 'user'}">${m.content}</div>
+            if(!data) {
+                flow.innerHTML = '<div style="color:#484f58;text-align:center;">基地信号正常，等待首条秘密...</div>';
+                return;
+            }
+            // 将对象转为数组并按时间排序
+            const sortedMsgs = Object.values(data).sort((a, b) => a.time - b.time);
+            
+            flow.innerHTML = sortedMsgs.map(m => `
+                <div class="msg ${m.author === 'Gemini' ? 'gemini' : 'user'}">
+                    ${m.content}
+                </div>
             `).join('');
-            flow.scrollTop = flow.scrollHeight;
+            
+            // 关键：发完或收到新消息自动滚到底部
+            setTimeout(() => { flow.scrollTop = flow.scrollHeight; }, 100);
         });
+
     </script>
 </body>
 </html>
