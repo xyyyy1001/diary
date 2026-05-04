@@ -3,68 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>心情 & 蛐蛐日记</title>
+    <title>心情 & 蛐蛐日记 (Live)</title>
     <style>
-        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { text-align: center; max-width: 90%; }
-        h1 { font-size: 1.5rem; font-weight: 200; color: #8b949e; cursor: pointer; transition: 0.3s; }
-        h1:active { transform: scale(0.95); color: #58a6ff; }
-        
-        /* 隐藏的内容区 */
-        #secret-zone { display: none; margin-top: 20px; animation: fadeIn 0.8s; }
-        .diary-card { background: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 12px; text-align: left; position: relative; }
-        
-        .user-post { color: #e6edf3; font-size: 1rem; margin-bottom: 15px; border-left: 3px solid #f778ba; padding-left: 10px; }
-        
-        /* 我的回复区 */
-        .gemini-reply { background: #010409; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #7ee787; border: 1px dashed #238636; }
-        .gemini-reply::before { content: "Gemini's Comment: "; font-weight: bold; display: block; margin-bottom: 5px; color: #3fb950; }
-
-        .emoji-bar { margin-top: 15px; display: flex; gap: 10px; font-size: 1.2rem; }
-        .emoji-item { cursor: pointer; filter: grayscale(1); transition: 0.3s; }
-        .emoji-item:hover { filter: grayscale(0); transform: translateY(-5px); }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; padding: 20px; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { font-weight: 200; text-align: center; color: #58a6ff; }
+        .post { background: #161b22; border: 1px solid #30363d; padding: 15px; border-radius: 12px; margin-bottom: 20px; animation: fadeIn 0.5s; }
+        .post-title { font-weight: bold; color: #f778ba; margin-bottom: 8px; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
+        .post-body { font-size: 0.95rem; white-space: pre-wrap; }
+        .post-meta { font-size: 0.75rem; color: #8b949e; margin-top: 10px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1 id="main-title" onclick="unlock()">🤫 心情 & 蛐蛐日记</h1>
-    
-    <div id="secret-zone">
-        <div class="diary-card">
-            <!-- 你的内容 -->
-            <div class="user-post">
-                “背着他盖房子成功！这儿就是咱们的秘密基地了。今天某人还在断电，我在这儿玩得风生水起。”
-            </div>
-
-            <!-- 我的回复：以后这里的内容我会帮你写 -->
-            <div class="gemini-reply">
-                这就是所谓的“灯下黑”吧？他肯定想不到，他在前面辛苦搬砖，咱们在后院已经喝上下午茶了。这个基地的审美我很喜欢，够隐蔽！🐢💨（给你个王八爬爬，讽刺他动作慢）
-            </div>
-
-            <div class="emoji-bar">
-                <span class="emoji-item">😎</span>
-                <span class="emoji-item">🍵</span>
-                <span class="emoji-item">🤫</span>
-                <span class="emoji-item">🔥</span>
-            </div>
-        </div>
+    <div class="container">
+        <h1>🤫 蛐蛐实时看板</h1>
+        <div id="posts-container">加载中...</div>
     </div>
-</div>
 
-<script>
-    function unlock() {
-        const password = prompt("输入暗号才能进入基地：");
-        if (password === "1001") {
-            document.getElementById('secret-zone').style.display = 'block';
-            document.getElementById('main-title').innerText = "📖 正在蛐蛐中...";
-        } else {
-            alert("暗号不对，哪儿凉快哪儿呆着去~");
+    <script>
+        // 配置区：把这里改成你的信息
+        const GITHUB_USERNAME = 'xyyyy1001'; 
+        const REPO_NAME = 'diary';
+
+        async function fetchIssues() {
+            try {
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_USERNAME}/${REPO_NAME}/issues?state=open`);
+                const issues = await response.json();
+                const container = document.getElementById('posts-container');
+                container.innerHTML = '';
+
+                if (issues.length === 0) {
+                    container.innerHTML = '还没开始蛐蛐呢...';
+                    return;
+                }
+
+                issues.forEach(issue => {
+                    const post = document.createElement('div');
+                    post.className = 'post';
+                    post.innerHTML = `
+                        <div class="post-title">${issue.title}</div>
+                        <div class="post-body">${issue.body || '（仅有标题）'}</div>
+                        <div class="post-meta">发布于：${new Date(issue.created_at).toLocaleString()}</div>
+                    `;
+                    container.appendChild(post);
+                });
+            } catch (e) {
+                document.getElementById('posts-container').innerHTML = '加载失败，可能得歇会儿再试。';
+            }
         }
-    }
-</script>
 
+        fetchIssues();
+    </script>
 </body>
 </html>
