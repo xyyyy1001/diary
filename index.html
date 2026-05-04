@@ -2,45 +2,55 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>秘密基地 v3.0</title>
+    <title>秘密基地 v4.0</title>
     <style>
-        body { background: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; padding: 20px; }
-        #chat { display: flex; flex-direction: column; gap: 15px; max-width: 600px; margin: 0 auto; }
-        .msg { padding: 12px; border-radius: 10px; line-height: 1.5; font-size: 14px; }
-        .user { align-self: flex-end; background: #21262d; border: 1px solid #30363d; color: #e6edf3; }
+        body { background: #0d1117; color: #c9d1d9; font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { max-width: 80%; padding: 10px; border-radius: 8px; font-size: 14px; }
+        .user { align-self: flex-end; background: #21262d; border: 1px solid #30363d; }
         .gemini { align-self: flex-start; background: #161b22; border: 1px solid #238636; color: #7ee787; }
-        .time { font-size: 10px; color: #484f58; margin-top: 5px; }
+        .input-area { padding: 20px; background: #161b22; display: flex; gap: 10px; }
+        input { flex: 1; background: #0d1117; border: 1px solid #30363d; color: white; padding: 10px; border-radius: 5px; }
+        button { background: #238636; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="chat">正在从 GitHub 秘密通道读取数据...</div>
+    <div id="chat">正在接入 GitHub 通道...</div>
+    <div class="input-area">
+        <input type="text" id="msg-input" placeholder="输入秘密内容...">
+        <button onclick="send()">发送</button>
+    </div>
 
     <script>
-        // 只需要填这两个！
-        const OWNER = '你的GitHub用户名'; 
+        const GITHUB_TOKEN = '你的TOKEN'; // 填你刚申请的 Token
+        const OWNER = '你的用户名';
         const REPO = '你的仓库名';
+        const ISSUE_NUMBER = 1; // 填你在仓库里开的那个 Issue 编号
 
         async function load() {
-            // 获取 Issues 列表
-            const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues/1/comments`);
-            const comments = await res.json();
-            const chat = document.getElementById('chat');
-            
-            if (!comments.length) {
-                chat.innerHTML = "基地目前空空如也，去 Issue #1 留个言？";
-                return;
-            }
-
-            chat.innerHTML = comments.map(c => `
-                <div class="msg ${c.user.login === OWNER ? 'user' : 'gemini'}">
-                    ${c.body}
-                    <div class="time">${new Date(c.created_at).toLocaleString()}</div>
-                </div>
+            const res = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues/${ISSUE_NUMBER}/comments`, {
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            });
+            const data = await res.json();
+            document.getElementById('chat').innerHTML = data.map(c => `
+                <div class="msg ${c.user.login === OWNER ? 'user' : 'gemini'}">${c.body}</div>
             `).join('');
         }
 
+        async function send() {
+            const body = document.getElementById('msg-input').value;
+            if (!body) return;
+            await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/issues/${ISSUE_NUMBER}/comments`, {
+                method: 'POST',
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ body })
+            });
+            document.getElementById('msg-input').value = '';
+            load();
+        }
+
         load();
-        setInterval(load, 10000);
+        setInterval(load, 5000);
     </script>
 </body>
 </html>
