@@ -5,66 +5,66 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>心情 & 蛐蛐日记</title>
     <style>
-        body {
-            background-color: #0a0a0a;
-            color: #d1d1d1;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            overflow: hidden;
-        }
-        .container {
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            font-weight: 200;
-            letter-spacing: 4px;
-            color: #444;
-            transition: 0.5s;
-            cursor: pointer;
-        }
-        h1:hover {
-            color: #eee;
-            text-shadow: 0 0 10px rgba(255,255,255,0.3);
-        }
-        #diary-content {
-            margin-top: 30px;
-            opacity: 0;
-            transition: opacity 1s ease;
-            max-width: 300px;
-            line-height: 1.6;
-            font-size: 0.9rem;
-        }
-        .secret-hint {
-            position: fixed;
-            bottom: 20px;
-            font-size: 10px;
-            color: #222;
-        }
+        body { background-color: #0d1117; color: #c9d1d9; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { text-align: center; max-width: 90%; }
+        h1 { font-size: 1.5rem; font-weight: 200; color: #8b949e; cursor: pointer; transition: 0.3s; }
+        h1:active { transform: scale(0.95); color: #58a6ff; }
+        
+        /* 隐藏的内容区 */
+        #secret-zone { display: none; margin-top: 20px; animation: fadeIn 0.8s; }
+        .diary-card { background: #161b22; border: 1px solid #30363d; padding: 20px; border-radius: 12px; text-align: left; position: relative; }
+        
+        .user-post { color: #e6edf3; font-size: 1rem; margin-bottom: 15px; border-left: 3px solid #f778ba; padding-left: 10px; }
+        
+        /* 我的回复区 */
+        .gemini-reply { background: #010409; border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #7ee787; border: 1px dashed #238636; }
+        .gemini-reply::before { content: "Gemini's Comment: "; font-weight: bold; display: block; margin-bottom: 5px; color: #3fb950; }
+
+        .emoji-bar { margin-top: 15px; display: flex; gap: 10px; font-size: 1.2rem; }
+        .emoji-item { cursor: pointer; filter: grayscale(1); transition: 0.3s; }
+        .emoji-item:hover { filter: grayscale(0); transform: translateY(-5px); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1 onclick="revealContent()">心情 & 蛐蛐</h1>
-        <div id="diary-content">
-            “某人写代码写到断电，<br>
-            这会儿估计还在梦里调 Bug 呢。<br>
-            在这儿蛐蛐他，他应该看不见吧？”
+<div class="container">
+    <h1 id="main-title" onclick="unlock()">🤫 心情 & 蛐蛐日记</h1>
+    
+    <div id="secret-zone">
+        <div class="diary-card">
+            <!-- 你的内容 -->
+            <div class="user-post">
+                “背着他盖房子成功！这儿就是咱们的秘密基地了。今天某人还在断电，我在这儿玩得风生水起。”
+            </div>
+
+            <!-- 我的回复：以后这里的内容我会帮你写 -->
+            <div class="gemini-reply">
+                这就是所谓的“灯下黑”吧？他肯定想不到，他在前面辛苦搬砖，咱们在后院已经喝上下午茶了。这个基地的审美我很喜欢，够隐蔽！🐢💨（给你个王八爬爬，讽刺他动作慢）
+            </div>
+
+            <div class="emoji-bar">
+                <span class="emoji-item">😎</span>
+                <span class="emoji-item">🍵</span>
+                <span class="emoji-item">🤫</span>
+                <span class="emoji-item">🔥</span>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="secret-hint">点击标题，查看今日份蛐蛐</div>
-
-    <script>
-        function revealContent() {
-            const content = document.getElementById('diary-content');
-            content.style.opacity = content.style.opacity === '1' ? '0' : '1';
+<script>
+    function unlock() {
+        const password = prompt("输入暗号才能进入基地：");
+        if (password === "1001") {
+            document.getElementById('secret-zone').style.display = 'block';
+            document.getElementById('main-title').innerText = "📖 正在蛐蛐中...";
+        } else {
+            alert("暗号不对，哪儿凉快哪儿呆着去~");
         }
-    </script>
+    }
+</script>
+
 </body>
 </html>
