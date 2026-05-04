@@ -72,9 +72,18 @@
             const input = document.getElementById('user-input');
             const val = input.value;
             if (!val) return;
-            const { error } = await supabaseClient.from('diary').insert([{ content: val, author: 'User' }]);
+            
+            // 我们手动加上时间戳，看看能不能绕过限制
+            const { error } = await supabaseClient.from('diary').insert([
+                { 
+                    content: val, 
+                    author: 'User', 
+                    created_at: new Date().toISOString() 
+                }
+            ]);
+            
             if (error) {
-                alert("发送失败，快去检查 Supabase 的 RLS 权限！");
+                alert("还是发不出去: " + error.message);
             } else {
                 input.value = '';
                 loadData();
