@@ -2,7 +2,6 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <!-- 关键：这行解决了手机缩放问题 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>秘密基地</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
@@ -10,22 +9,64 @@
     <style>
         :root {
             --bg-color: #0d1117;
-            --user-msg: #21262d;
-            --ai-msg: #161b22;
+            /* 气泡颜色修改 */
+            --user-bubble: #db61a2; /* 你的气泡：精致粉 */
+            --ai-bubble: #388bfd;   /* 我的气泡：清爽蓝 */
             --border: #30363d;
-            --accent: #238636;
+            --accent: #f06292;
         }
-        body { 
+        body, html { 
             background: var(--bg-color); 
             color: #c9d1d9; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
             margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100dvh; /* 使用 dvh 适配手机浏览器工具栏 */
+            padding: 0;
+            height: 100%;
             overflow: hidden;
         }
-        /* 顶部装饰条 */
+
+        /* --- 首页样式 --- */
+        #main-page {
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle at center, #161b22 0%, #0d1117 100%);
+            z-index: 100;
+            position: absolute;
+            width: 100%;
+            transition: transform 0.5s ease-in-out;
+        }
+        .logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px var(--user-bubble));
+        }
+        .enter-btn {
+            background: transparent;
+            border: 2px solid var(--user-bubble);
+            color: var(--user-bubble);
+            padding: 12px 40px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .enter-btn:active {
+            background: var(--user-bubble);
+            color: white;
+            transform: scale(0.95);
+        }
+
+        /* --- 聊天室布局 --- */
+        #chat-container {
+            display: none; /* 初始隐藏 */
+            flex-direction: column;
+            height: 100dvh;
+        }
         header {
             padding: 15px;
             text-align: center;
@@ -41,73 +82,84 @@
             padding: 15px;
             display: flex; 
             flex-direction: column; 
-            gap: 12px;
+            gap: 15px;
             -webkit-overflow-scrolling: touch;
         }
+
+        /* --- 气泡样式 --- */
         .msg { 
             padding: 12px 16px; 
-            border-radius: 18px; 
-            max-width: 85%; 
-            font-size: 16px; /* 手机端 16px 是最舒服的阅读字号 */
+            border-radius: 20px; 
+            max-width: 80%; 
+            font-size: 16px; 
             line-height: 1.5;
             word-wrap: break-word;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: relative;
         }
         .user { 
             align-self: flex-end; 
-            background: var(--user-msg); 
-            border: 1px solid var(--border);
+            background: var(--user-bubble); 
+            color: white;
             border-bottom-right-radius: 4px;
         }
         .gemini { 
             align-self: flex-start; 
-            background: var(--ai-msg); 
-            border: 1px solid #238636; 
-            color: #7ee787; 
+            background: var(--ai-bubble); 
+            color: white;
             border-bottom-left-radius: 4px;
         }
+
+        /* --- 输入框 --- */
         .input-bar { 
             display: flex; 
             gap: 8px; 
             padding: 15px; 
-            background: var(--bg-color);
+            background: #161b22;
             border-top: 1px solid var(--border);
-            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 适配 iPhone 底部黑条 */
+            padding-bottom: calc(15px + env(safe-area-inset-bottom));
         }
         input { 
             flex: 1; 
-            background: #161b22; 
+            background: #0d1117; 
             border: 1px solid var(--border); 
             color: white; 
-            padding: 12px 15px; 
+            padding: 12px 18px; 
             border-radius: 25px; 
             font-size: 16px;
             outline: none;
         }
-        input:focus { border-color: var(--accent); }
         button { 
-            background: var(--accent); 
+            background: var(--user-bubble); 
             color: white; 
             border: none; 
             padding: 0 20px; 
             border-radius: 25px; 
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
         }
-        button:active { opacity: 0.7; }
     </style>
 </head>
 <body>
-    <header>🔒 专属秘密基地</header>
-    <div id="chat"></div>
-    <div class="input-bar">
-        <input type="text" id="ipt" placeholder="输入消息..." autocomplete="off">
-        <button onclick="send()">发送</button>
+
+    <!-- 首页 -->
+    <div id="main-page">
+        <div class="logo">🌸</div>
+        <h2 style="color: white; letter-spacing: 2px;">个人秘密基地</h2>
+        <p style="color: #8b949e; margin-bottom: 30px;">记录此刻的心情</p>
+        <button class="enter-btn" onclick="enterBase()">进入基地</button>
+    </div>
+
+    <!-- 聊天页 -->
+    <div id="chat-container">
+        <header>🔒 连线中...</header>
+        <div id="chat"></div>
+        <div class="input-bar">
+            <input type="text" id="ipt" placeholder="想说什么..." autocomplete="off">
+            <button onclick="send()">发送</button>
+        </div>
     </div>
 
     <script>
-        // 这里填你之前的 firebaseConfig
         const firebaseConfig = {
           apiKey: "AIzaSyDiBOy5BmECF7k27wVn0v-BL2EikISqK60",
           authDomain: "diary-8de7a.firebaseapp.com",
@@ -121,6 +173,16 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database().ref('messages');
 
+        // 切换页面逻辑
+        function enterBase() {
+            document.getElementById('main-page').style.transform = 'translateY(-100%)';
+            setTimeout(() => {
+                document.getElementById('main-page').style.display = 'none';
+                document.getElementById('chat-container').style.display = 'flex';
+                scrollToBottom();
+            }, 500);
+        }
+
         function send() {
             const val = document.getElementById('ipt').value;
             if(!val) return;
@@ -128,10 +190,14 @@
             document.getElementById('ipt').value = '';
         }
 
-        // 监听回车发送
         document.getElementById('ipt').addEventListener('keypress', (e) => {
             if(e.key === 'Enter') send();
         });
+
+        function scrollToBottom() {
+            const flow = document.getElementById('chat');
+            flow.scrollTop = flow.scrollHeight;
+        }
 
         db.on('value', (snap) => {
             const data = snap.val();
@@ -143,8 +209,7 @@
                 <div class="msg ${m.author === 'Gemini' ? 'gemini' : 'user'}">${m.content}</div>
             `).join('');
             
-            // 自动滚动到底部
-            setTimeout(() => { flow.scrollTop = flow.scrollHeight; }, 100);
+            setTimeout(scrollToBottom, 100);
         });
     </script>
 </body>
